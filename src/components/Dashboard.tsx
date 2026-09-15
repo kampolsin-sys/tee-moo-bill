@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useAppStore, Transaction, User } from '../store/useAppStore';
 import { format, parseISO } from 'date-fns';
-import { Download, CheckCircle2, Trash2, Edit2 } from 'lucide-react';
+import { Trash2, CheckCircle2, Download, Edit2, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import EditModal from './EditModal';
 
@@ -182,7 +182,14 @@ export default function Dashboard() {
               {summary.teePaidTxs.map(({tx, owes}) => (
                 <div key={tx.id} className="text-[11px] leading-tight flex justify-between group">
                   <div className="flex-1 pr-1">
-                    <span className="font-semibold text-gray-800">{tx.description}</span>
+                    <span className="font-semibold text-gray-800">
+                      {tx.description}
+                      {tx.receiptUrl && (
+                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                          <ImageIcon className="w-3 h-3 inline mb-[2px]" />
+                        </a>
+                      )}
+                    </span>
                     <span className="no-print whitespace-nowrap ml-1">
                       <button className="text-blue-300 hover:text-blue-500 inline" onClick={() => setEditingTx(tx)}>
                         <Edit2 className="w-3 h-3 inline" />
@@ -224,7 +231,14 @@ export default function Dashboard() {
               {summary.mooPaidTxs.map(({tx, owes}) => (
                 <div key={tx.id} className="text-[11px] leading-tight flex justify-between group">
                   <div className="flex-1 pr-1">
-                    <span className="font-semibold text-gray-800">{tx.description}</span>
+                    <span className="font-semibold text-gray-800">
+                      {tx.description}
+                      {tx.receiptUrl && (
+                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                          <ImageIcon className="w-3 h-3 inline mb-[2px]" />
+                        </a>
+                      )}
+                    </span>
                     <span className="no-print whitespace-nowrap ml-1">
                       <button className="text-blue-300 hover:text-blue-500 inline" onClick={() => setEditingTx(tx)}>
                         <Edit2 className="w-3 h-3 inline" />

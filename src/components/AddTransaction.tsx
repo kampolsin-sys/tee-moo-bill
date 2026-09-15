@@ -13,15 +13,30 @@ export default function AddTransaction() {
   const [paidBy, setPaidBy] = useState<User>('Tee');
   const [sharedWith, setSharedWith] = useState<User | 'Both'>('Both');
   const [clearDate, setClearDate] = useState(calculateClearDate(format(new Date(), 'yyyy-MM-dd'), 'Tee'));
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setClearDate(calculateClearDate(date, paidBy));
   }, [date, paidBy]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !amount) return;
     
+    let receiptUrl = undefined;
+    if (receiptFile) {
+      setIsUploading(true);
+      try {
+        const { uploadReceipt } = await import('../lib/uploadUtils');
+        receiptUrl = await uploadReceipt(receiptFile);
+      } catch (err) {
+        alert('อัปโหลดไฟล์ล้มเหลว กรุณาลองใหม่');
+        setIsUploading(false);
+        return;
+      }
+    }
+
     addTransaction({
       date,
       description,
@@ -29,13 +44,16 @@ export default function AddTransaction() {
       amount: parseFloat(amount),
       paidBy,
       sharedWith,
-      clearDate
+      clearDate,
+      receiptUrl
     });
     
     // reset form but keep some defaults
     setDescription('');
     setNote('');
     setAmount('');
+    setReceiptFile(null);
+    setIsUploading(false);
     alert('บันทึกรายการสำเร็จ');
   };
 
@@ -122,15 +140,33 @@ export default function AddTransaction() {
           <input 
             type="date" 
             required
-            className="w-full p-2 border rounded-lg bg-blue-50 text-blue-700 font-medium"
+            className="w-full p-2 border rounded-lg bg-blue-50 text-blue-700 font-medium mb-1"
             value={clearDate}
             onChange={(e) => setClearDate(e.target.value)}
           />
-          <p className="text-xs text-gray-500 mt-1">* คำนวณอัตโนมัติตามรอบบิล แต่สามารถแก้ไขเองได้</p>
+          <p className="text-xs text-gray-500 mb-4">* คำนวณอัตโนมัติตามรอบบิล แต่สามารถแก้ไขเองได้</p>
+          
+          <label className="block text-sm font-medium text-gray-700 mb-1 pt-2 border-t">แนบรูปสลิป / บิล (ไม่บังคับ)</label>
+
+          <input 
+            type="file" 
+            accept="image/*"
+            className="w-full p-2 border rounded-lg text-sm bg-gray-50"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setReceiptFile(e.target.files[0]);
+              }
+            }}
+          />
+          {receiptFile && <p className="text-xs text-green-600 mt-1">เลือกไฟล์: {receiptFile.name}</p>}
         </div>
 
-        <button type="submit" className="w-full bg-primary text-white p-3 rounded-xl font-bold text-lg mt-4 shadow-md active:scale-95 transition-transform">
-          บันทึกรายการ
+        <button 
+          type="submit" 
+          disabled={isUploading}
+          className={`w-full text-white p-3 rounded-xl font-bold text-lg mt-4 shadow-md transition-transform ${isUploading ? 'bg-gray-400' : 'bg-primary active:scale-95'}`}
+        >
+          {isUploading ? 'กำลังอัปโหลด...' : 'บันทึกรายการ'}
         </button>
       </form>
     </div>

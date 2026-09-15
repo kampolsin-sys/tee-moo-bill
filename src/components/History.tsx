@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAppStore, Transaction } from '../store/useAppStore';
 import { format, parseISO } from 'date-fns';
-import { History as HistoryIcon } from 'lucide-react';
+import { History as HistoryIcon, Image as ImageIcon } from 'lucide-react';
 
 export default function History() {
   const { transactions } = useAppStore();
@@ -126,7 +126,14 @@ export default function History() {
               {summary.teePaidTxs.map(({tx, owes}) => (
                 <div key={tx.id} className="text-[11px] leading-tight flex justify-between">
                   <div className="flex-1 pr-1">
-                    <span className="font-semibold text-gray-700">{tx.description}</span>
+                    <span className="font-semibold text-gray-700">
+                      {tx.description}
+                      {tx.receiptUrl && (
+                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                          <ImageIcon className="w-3 h-3 inline mb-[2px]" />
+                        </a>
+                      )}
+                    </span>
                   </div>
                   <div className="font-bold text-gray-600">฿{owes}</div>
                 </div>
@@ -146,7 +153,14 @@ export default function History() {
               {summary.mooPaidTxs.map(({tx, owes}) => (
                 <div key={tx.id} className="text-[11px] leading-tight flex justify-between">
                   <div className="flex-1 pr-1">
-                    <span className="font-semibold text-gray-700">{tx.description}</span>
+                    <span className="font-semibold text-gray-700">
+                      {tx.description}
+                      {tx.receiptUrl && (
+                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                          <ImageIcon className="w-3 h-3 inline mb-[2px]" />
+                        </a>
+                      )}
+                    </span>
                   </div>
                   <div className="font-bold text-gray-600">฿{owes}</div>
                 </div>

@@ -13,6 +13,7 @@ export interface Transaction {
   sharedWith: User | 'Both';
   clearDate: string; // The target date to clear this bill (e.g. 15th of next month)
   status: 'pending' | 'paid';
+  receiptUrl?: string; // URL to the uploaded receipt image
 }
 
 export interface Routine {
