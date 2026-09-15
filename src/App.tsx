@@ -1,14 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, PlusCircle, Settings as SettingsIcon, Repeat, History as HistoryIcon } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import AddTransaction from './components/AddTransaction';
 import Routines from './components/Routines';
 import SettingsPage from './components/SettingsPage';
 import History from './components/History';
+import { initSync } from './store/useAppStore';
 import { cn } from './lib/utils';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'add' | 'routines' | 'history' | 'settings'>('home');
+
+  useEffect(() => {
+    initSync();
+  }, []);
 
   const tabs = [
     { id: 'home', label: 'หน้าแรก', icon: Home },
