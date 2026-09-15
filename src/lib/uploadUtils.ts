@@ -1,34 +1,21 @@
-const UPLOAD_API_URL = 'https://script.google.com/macros/s/AKfycbz5pYFLIjKZoBN3JR2hLUhCJTGOScxhvYnwFn5Acg1vy2GpxTID_E2VE3RGXF17q5Bs/exec';
+import { supabase } from './supabase';
 
 export async function uploadReceipt(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const base64Data = (reader.result as string).split(',')[1];
-        
-        // We use text/plain to avoid CORS preflight OPTIONS request
-        const response = await fetch(UPLOAD_API_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            base64: base64Data,
-            filename: file.name,
-            mimeType: file.type
-          })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          resolve(result.url);
-        } else {
-          reject(new Error(result.error || 'Upload failed'));
-        }
-      } catch (err) {
-        reject(err);
-      }
-    };
-    reader.onerror = (err) => reject(err);
-    reader.readAsDataURL(file);
-  });
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+  const filePath = `${fileName}`;
+
+  const { error } = await supabase.storage
+    .from('receipts')
+    .upload(filePath, file);
+
+  if (error) {
+    throw error;
+  }
+
+  const { data } = supabase.storage
+    .from('receipts')
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
 }
