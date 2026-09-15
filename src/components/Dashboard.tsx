@@ -4,11 +4,13 @@ import { format, parseISO } from 'date-fns';
 import { Trash2, CheckCircle2, Download, Edit2, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import EditModal from './EditModal';
+import ImageViewer from './ImageViewer';
 
 export default function Dashboard() {
   const { transactions, markCycleAsPaid, deleteTransaction } = useAppStore();
   const billRef = useRef<HTMLDivElement>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
   
   // Group transactions by clearDate
   const groups = useMemo(() => {
@@ -185,9 +187,9 @@ export default function Dashboard() {
                     <span className="font-semibold text-gray-800">
                       {tx.description}
                       {tx.receiptUrl && (
-                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                        <button onClick={() => setViewingImage(tx.receiptUrl!)} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
                           <ImageIcon className="w-3 h-3 inline mb-[2px]" />
-                        </a>
+                        </button>
                       )}
                     </span>
                     <span className="no-print whitespace-nowrap ml-1">
@@ -234,9 +236,9 @@ export default function Dashboard() {
                     <span className="font-semibold text-gray-800">
                       {tx.description}
                       {tx.receiptUrl && (
-                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                        <button onClick={() => setViewingImage(tx.receiptUrl!)} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
                           <ImageIcon className="w-3 h-3 inline mb-[2px]" />
-                        </a>
+                        </button>
                       )}
                     </span>
                     <span className="no-print whitespace-nowrap ml-1">
@@ -291,6 +293,12 @@ export default function Dashboard() {
         <CheckCircle2 className="w-5 h-5" /> เคลียร์ยอดทั้งสองฝ่าย & เซฟรูป
       </button>
       
+      {viewingImage && (
+        <ImageViewer 
+          url={viewingImage} 
+          onClose={() => setViewingImage(null)} 
+        />
+      )}
     </div>
   );
 }

@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react';
 import { useAppStore, Transaction } from '../store/useAppStore';
 import { format, parseISO } from 'date-fns';
 import { History as HistoryIcon, Image as ImageIcon } from 'lucide-react';
+import ImageViewer from './ImageViewer';
 
 export default function History() {
   const { transactions } = useAppStore();
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
   
   // Group transactions by clearDate
   const groups = useMemo(() => {
@@ -129,9 +131,9 @@ export default function History() {
                     <span className="font-semibold text-gray-700">
                       {tx.description}
                       {tx.receiptUrl && (
-                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                        <button onClick={() => setViewingImage(tx.receiptUrl!)} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
                           <ImageIcon className="w-3 h-3 inline mb-[2px]" />
-                        </a>
+                        </button>
                       )}
                     </span>
                   </div>
@@ -156,9 +158,9 @@ export default function History() {
                     <span className="font-semibold text-gray-700">
                       {tx.description}
                       {tx.receiptUrl && (
-                        <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                        <button onClick={() => setViewingImage(tx.receiptUrl!)} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
                           <ImageIcon className="w-3 h-3 inline mb-[2px]" />
-                        </a>
+                        </button>
                       )}
                     </span>
                   </div>
@@ -170,6 +172,12 @@ export default function History() {
         </div>
       </div>
       
+      {viewingImage && (
+        <ImageViewer 
+          url={viewingImage} 
+          onClose={() => setViewingImage(null)} 
+        />
+      )}
     </div>
   );
 }
