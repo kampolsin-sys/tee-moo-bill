@@ -184,5 +184,7 @@ useAppStore.subscribe((state) => {
       routines: state.routines,
       settings: state.settings
     } 
-  }).catch((err: unknown) => console.error("Sync error:", err));
+  }).then(({ error }) => {
+    if (error) console.error("Sync error:", error);
+  });
 });
