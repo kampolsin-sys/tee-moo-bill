@@ -95,11 +95,11 @@ export default function Dashboard() {
     stampDiv.className = "absolute inset-0 flex items-center justify-center z-50 pointer-events-none";
     let stampHtml = '';
     if (whoIsPaying === 'All') {
-      stampHtml = `<div style="transform: rotate(-15deg); font-size: 3rem; font-weight: 900; color: #22c55e; border: 8px solid #22c55e; padding: 1rem 2rem; border-radius: 1rem; opacity: 0.7; background: rgba(255,255,255,0.8);">เคลียร์แล้ว</div>`;
+      stampHtml = `<div style="transform: rotate(-15deg); font-size: 3rem; font-weight: 900; color: #22c55e; border: 8px solid #22c55e; padding: 1rem 2rem; border-radius: 1rem; opacity: 0.35; background: rgba(255,255,255,0.4);">เคลียร์แล้ว</div>`;
     } else if (whoIsPaying === 'Moo') {
-      stampHtml = `<div style="transform: rotate(-15deg); font-size: 2.5rem; font-weight: 900; color: #f97316; border: 8px solid #f97316; padding: 1rem 2rem; border-radius: 1rem; opacity: 0.8; background: rgba(255,255,255,0.8); margin-right: 50%;">หมูเคลียร์แล้ว</div>`;
+      stampHtml = `<div style="transform: rotate(-15deg); font-size: 2.5rem; font-weight: 900; color: #f97316; border: 8px solid #f97316; padding: 1rem 2rem; border-radius: 1rem; opacity: 0.35; background: rgba(255,255,255,0.4); margin-right: 50%;">หมูเคลียร์แล้ว</div>`;
     } else {
-      stampHtml = `<div style="transform: rotate(-15deg); font-size: 2.5rem; font-weight: 900; color: #ec4899; border: 8px solid #ec4899; padding: 1rem 2rem; border-radius: 1rem; opacity: 0.8; background: rgba(255,255,255,0.8); margin-left: 50%;">ตี๋เคลียร์แล้ว</div>`;
+      stampHtml = `<div style="transform: rotate(-15deg); font-size: 2.5rem; font-weight: 900; color: #ec4899; border: 8px solid #ec4899; padding: 1rem 2rem; border-radius: 1rem; opacity: 0.35; background: rgba(255,255,255,0.4); margin-left: 50%;">ตี๋เคลียร์แล้ว</div>`;
     }
     stampDiv.innerHTML = stampHtml;
     billRef.current.appendChild(stampDiv);
