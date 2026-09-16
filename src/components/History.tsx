@@ -181,6 +181,20 @@ export default function History() {
             </div>
           </div>
         </div>
+
+        {/* Net Total Summary */}
+        <div className="text-center pt-2 border-t text-sm relative z-10">
+          {summary.mooOwesTeeTotal === summary.teeOwesMooTotal ? (
+            <span className="text-gray-500 font-bold">ยอดเจ๊ากันพอดี</span>
+          ) : (
+            <span className="font-bold text-gray-600">
+              สรุปยอดหักลบ: <span className={summary.mooOwesTeeTotal > summary.teeOwesMooTotal ? "text-orange-600" : "text-pink-600"}>
+                {summary.mooOwesTeeTotal > summary.teeOwesMooTotal ? "หมูต้องโอนให้ตี๋ " : "ตี๋ต้องโอนให้หมู "}
+                ฿{Math.abs(summary.mooOwesTeeTotal - summary.teeOwesMooTotal).toLocaleString(undefined, {minimumFractionDigits: 2})}
+              </span>
+            </span>
+          )}
+        </div>
       </div>
       
       {viewingImage && (
