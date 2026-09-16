@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useAppStore, User, Routine } from '../store/useAppStore';
-import { calculateClearDate } from '../lib/dateUtils';
-import { format } from 'date-fns';
 import { PlusCircle, Trash2, CheckCircle2 } from 'lucide-react';
 
 export default function Routines() {
-  const { routines, addRoutine, deleteRoutine, addTransaction, setDraftTransaction } = useAppStore();
+  const { routines, addRoutine, deleteRoutine, setDraftTransaction } = useAppStore();
   
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');

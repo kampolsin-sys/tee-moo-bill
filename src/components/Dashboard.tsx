@@ -10,7 +10,7 @@ import ImageViewer from './ImageViewer';
 export default function Dashboard() {
   const { transactions, markCycleAsPaid, deleteTransaction } = useAppStore();
   const billRef = useRef<HTMLDivElement>(null);
-  const [activeDate, setActiveDate] = useState<string | null>(null);
+
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   const [checkoutImage, setCheckoutImage] = useState<string | null>(null);
