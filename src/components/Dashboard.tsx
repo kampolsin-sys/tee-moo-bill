@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { useAppStore, Transaction, User } from '../store/useAppStore';
 import { format, parseISO } from 'date-fns';
+import { th } from 'date-fns/locale';
 import { Trash2, CheckCircle2, Download, Edit2, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import EditModal from './EditModal';
@@ -9,8 +10,10 @@ import ImageViewer from './ImageViewer';
 export default function Dashboard() {
   const { transactions, markCycleAsPaid, deleteTransaction } = useAppStore();
   const billRef = useRef<HTMLDivElement>(null);
+  const [activeDate, setActiveDate] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
+  const [checkoutImage, setCheckoutImage] = useState<string | null>(null);
   
   // Group transactions by clearDate
   const groups = useMemo(() => {
@@ -107,12 +110,30 @@ export default function Dashboard() {
       
       const canvas = await html2canvas(billRef.current, { scale: 2, backgroundColor: '#f9fafb' });
       const image = canvas.toDataURL("image/jpeg");
-      
-      const link = document.createElement('a');
-      link.href = image;
       const suffix = whoIsPaying === 'All' ? 'all' : whoIsPaying.toLowerCase();
-      link.download = `bill-${currentGroup.clearDate}-${suffix}.jpg`;
-      link.click();
+      const filename = `bill-${currentGroup.clearDate}-${suffix}.jpg`;
+      
+      // Try Web Share API for mobile first
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+      let shared = false;
+      if (blob && navigator.share && navigator.canShare) {
+        const file = new File([blob], filename, { type: 'image/jpeg' });
+        if (navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'สรุปบิลตี๋หมู',
+            });
+            shared = true;
+          } catch (e) {
+            console.log('Share cancelled or failed', e);
+          }
+        }
+      }
+
+      if (!shared) {
+        setCheckoutImage(image);
+      }
       
       const promptText = whoIsPaying === 'All' 
         ? "ต้องการบันทึกว่าบิลรอบนี้ 'จ่ายครบทั้งหมดแล้ว' หรือไม่?"
@@ -159,7 +180,7 @@ export default function Dashboard() {
                 activeDate === g.clearDate ? 'bg-primary text-white shadow-md' : 'bg-gray-200 text-gray-700'
               }`}
             >
-              รอบ {format(parseISO(g.clearDate), 'dd MMM yyyy')}
+              รอบ {format(parseISO(g.clearDate), 'dd MMM yyyy', { locale: th })}
             </button>
           ))}
         </div>
@@ -168,7 +189,7 @@ export default function Dashboard() {
       <div ref={billRef} className="bg-white rounded-2xl shadow-sm border overflow-hidden p-3 relative">
         <div className="text-center mb-4">
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">รอบบิลที่จะเคลียร์วันที่</h2>
-          <p className="text-xl font-black text-primary">{format(parseISO(currentGroup.clearDate), 'dd MMM yyyy')}</p>
+          <p className="text-xl font-black text-primary">{format(parseISO(currentGroup.clearDate), 'dd MMM yyyy', { locale: th })}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-2 mb-4 items-start relative">
@@ -182,21 +203,25 @@ export default function Dashboard() {
             
             <div className="space-y-2 flex-1">
               {summary.teePaidTxs.map(({tx, owes}) => (
-                <div key={tx.id} className="text-[11px] leading-tight flex justify-between group">
+                <div 
+                  key={tx.id} 
+                  className="text-[11px] leading-tight flex justify-between group cursor-pointer hover:bg-orange-100/50 p-1 -mx-1 rounded transition-colors"
+                  onClick={() => setEditingTx(tx)}
+                >
                   <div className="flex-1 pr-1">
                     <span className="font-semibold text-gray-800">
                       {tx.description}
                       {tx.receiptUrl && (
-                        <button onClick={() => setViewingImage(tx.receiptUrl!)} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                        <button onClick={(e) => { e.stopPropagation(); setViewingImage(tx.receiptUrl!); }} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
                           <ImageIcon className="w-3 h-3 inline mb-[2px]" />
                         </button>
                       )}
                     </span>
                     <span className="no-print whitespace-nowrap ml-1">
-                      <button className="text-blue-300 hover:text-blue-500 inline" onClick={() => setEditingTx(tx)}>
+                      <button className="text-blue-300 hover:text-blue-500 inline" onClick={(e) => { e.stopPropagation(); setEditingTx(tx); }}>
                         <Edit2 className="w-3 h-3 inline" />
                       </button>
-                      <button className="text-red-300 hover:text-red-500 ml-1 inline" onClick={() => deleteTransaction(tx.id)}>
+                      <button className="text-red-300 hover:text-red-500 ml-1 inline" onClick={(e) => { e.stopPropagation(); deleteTransaction(tx.id); }}>
                         <Trash2 className="w-3 h-3 inline" />
                       </button>
                     </span>
@@ -231,21 +256,25 @@ export default function Dashboard() {
             
             <div className="space-y-2 flex-1">
               {summary.mooPaidTxs.map(({tx, owes}) => (
-                <div key={tx.id} className="text-[11px] leading-tight flex justify-between group">
+                <div 
+                  key={tx.id} 
+                  className="text-[11px] leading-tight flex justify-between group cursor-pointer hover:bg-pink-100/50 p-1 -mx-1 rounded transition-colors"
+                  onClick={() => setEditingTx(tx)}
+                >
                   <div className="flex-1 pr-1">
                     <span className="font-semibold text-gray-800">
                       {tx.description}
                       {tx.receiptUrl && (
-                        <button onClick={() => setViewingImage(tx.receiptUrl!)} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
+                        <button onClick={(e) => { e.stopPropagation(); setViewingImage(tx.receiptUrl!); }} className="inline-block ml-1 text-blue-500 hover:text-blue-700" title="ดูรูปสลิป">
                           <ImageIcon className="w-3 h-3 inline mb-[2px]" />
                         </button>
                       )}
                     </span>
                     <span className="no-print whitespace-nowrap ml-1">
-                      <button className="text-blue-300 hover:text-blue-500 inline" onClick={() => setEditingTx(tx)}>
+                      <button className="text-blue-300 hover:text-blue-500 inline" onClick={(e) => { e.stopPropagation(); setEditingTx(tx); }}>
                         <Edit2 className="w-3 h-3 inline" />
                       </button>
-                      <button className="text-red-300 hover:text-red-500 ml-1 inline" onClick={() => deleteTransaction(tx.id)}>
+                      <button className="text-red-300 hover:text-red-500 ml-1 inline" onClick={(e) => { e.stopPropagation(); deleteTransaction(tx.id); }}>
                         <Trash2 className="w-3 h-3 inline" />
                       </button>
                     </span>
@@ -298,6 +327,30 @@ export default function Dashboard() {
           url={viewingImage} 
           onClose={() => setViewingImage(null)} 
         />
+      )}
+
+      {checkoutImage && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4">
+          <div className="bg-white/10 w-full p-4 text-center rounded-t-xl mb-4 shadow-lg text-white font-medium">
+            👇 แตะรูปภาพค้างไว้ แล้วเลือก "บันทึกรูปภาพ" (Save Image)
+          </div>
+          <button 
+            onClick={() => setCheckoutImage(null)}
+            className="absolute top-4 right-4 bg-white/20 p-2 rounded-full text-white hover:bg-white/30 transition z-10"
+          >
+            <span className="sr-only">Close</span>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+          
+          <div className="flex-1 w-full flex items-center justify-center overflow-auto pb-8">
+            <img 
+              src={checkoutImage} 
+              alt="Checkout Bill" 
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'default' }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

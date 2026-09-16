@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { PlusCircle, Trash2, CheckCircle2 } from 'lucide-react';
 
 export default function Routines() {
-  const { routines, addRoutine, deleteRoutine, addTransaction } = useAppStore();
+  const { routines, addRoutine, deleteRoutine, addTransaction, setDraftTransaction } = useAppStore();
   
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -28,26 +28,14 @@ export default function Routines() {
   };
 
   const handleUseRoutine = (routine: Routine) => {
-    // Prompt for amount just in case it changes
-    const newAmountStr = prompt(`ยอดเงินสำหรับ "${routine.description}" ของเดือนนี้:`, routine.amount.toString());
-    if (newAmountStr === null) return;
-    
-    const newAmount = parseFloat(newAmountStr);
-    if (isNaN(newAmount)) return;
-
-    const today = format(new Date(), 'yyyy-MM-dd');
-    
-    addTransaction({
-      date: today,
+    setDraftTransaction({
       description: routine.description,
-      amount: newAmount,
+      amount: routine.amount,
       paidBy: routine.paidBy,
       sharedWith: routine.sharedWith,
-      clearDate: calculateClearDate(today, routine.paidBy),
-      note: 'จากรายการประจำ'
+      note: 'จากรายการประจำ',
     });
-    
-    alert(`เพิ่ม ${routine.description} ลงในบิลปัจจุบันแล้ว`);
+    useAppStore.getState().setActiveTab('add');
   };
 
   return (

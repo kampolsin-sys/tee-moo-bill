@@ -44,11 +44,17 @@ export const getCycleSettings = (settings: Settings, type: 'mooOwesTee' | 'teeOw
   };
 };
 
+export type TabType = 'home' | 'add' | 'routines' | 'history' | 'settings';
+
 interface AppState {
   transactions: Transaction[];
   routines: Routine[];
   settings: Settings;
   isInitialized: boolean;
+  activeTab: TabType;
+  draftTransaction: Partial<Transaction> | null;
+  setActiveTab: (tab: TabType) => void;
+  setDraftTransaction: (tx: Partial<Transaction> | null) => void;
   addTransaction: (tx: Omit<Transaction, 'id' | 'status'>) => void;
   updateTransaction: (id: string, tx: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
@@ -57,6 +63,7 @@ interface AppState {
   deleteRoutine: (id: string) => void;
   updateSettings: (settings: Partial<Settings>) => void;
   markCycleAsPaid: (clearDate: string, whoIsPaying: User | 'All') => void;
+  undoCycle: (clearDate: string) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -67,6 +74,11 @@ export const useAppStore = create<AppState>((set) => ({
     teeOwesMoo: { cycleStartDay: 21, cycleEndDay: 20, payDay: 15 },
   },
   isInitialized: false,
+  activeTab: 'home',
+  draftTransaction: null,
+
+  setActiveTab: (tab) => set({ activeTab: tab }),
+  setDraftTransaction: (tx) => set({ draftTransaction: tx }),
 
   addTransaction: (tx) =>
     set((state) => ({
@@ -107,6 +119,15 @@ export const useAppStore = create<AppState>((set) => ({
         if (whoIsPaying === 'All') return { ...tx, status: 'paid' };
         if (whoIsPaying === 'Tee' && tx.paidBy === 'Moo') return { ...tx, status: 'paid' };
         if (whoIsPaying === 'Moo' && tx.paidBy === 'Tee') return { ...tx, status: 'paid' };
+        return tx;
+      }),
+    })),
+  undoCycle: (clearDate) =>
+    set((state) => ({
+      transactions: state.transactions.map((tx) => {
+        if (tx.clearDate === clearDate && tx.status === 'paid') {
+          return { ...tx, status: 'pending' };
+        }
         return tx;
       }),
     })),

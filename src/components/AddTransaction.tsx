@@ -4,21 +4,28 @@ import { calculateClearDate } from '../lib/dateUtils';
 import { format } from 'date-fns';
 
 export default function AddTransaction() {
-  const addTransaction = useAppStore((state) => state.addTransaction);
+  const { addTransaction, draftTransaction, setDraftTransaction, setActiveTab } = useAppStore();
   
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [description, setDescription] = useState('');
-  const [note, setNote] = useState('');
-  const [amount, setAmount] = useState('');
-  const [paidBy, setPaidBy] = useState<User>('Tee');
-  const [sharedWith, setSharedWith] = useState<User | 'Both'>('Both');
-  const [clearDate, setClearDate] = useState(calculateClearDate(format(new Date(), 'yyyy-MM-dd'), 'Tee'));
+  const [date, setDate] = useState(draftTransaction?.date || format(new Date(), 'yyyy-MM-dd'));
+  const [description, setDescription] = useState(draftTransaction?.description || '');
+  const [note, setNote] = useState(draftTransaction?.note || '');
+  const [amount, setAmount] = useState(draftTransaction?.amount?.toString() || '');
+  const [paidBy, setPaidBy] = useState<User>(draftTransaction?.paidBy || 'Tee');
+  const [sharedWith, setSharedWith] = useState<User | 'Both'>(draftTransaction?.sharedWith || 'Both');
+  const [clearDate, setClearDate] = useState(draftTransaction?.clearDate || calculateClearDate(format(new Date(), 'yyyy-MM-dd'), draftTransaction?.paidBy || 'Tee'));
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
-    setClearDate(calculateClearDate(date, paidBy));
-  }, [date, paidBy]);
+    if (!draftTransaction?.clearDate) {
+      setClearDate(calculateClearDate(date, paidBy));
+    }
+  }, [date, paidBy, draftTransaction]);
+
+  // Clear draft when unmounting so it doesn't persist forever
+  useEffect(() => {
+    return () => setDraftTransaction(null);
+  }, [setDraftTransaction]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +61,7 @@ export default function AddTransaction() {
     setAmount('');
     setReceiptFile(null);
     setIsUploading(false);
+    setActiveTab('home');
     alert('บันทึกรายการสำเร็จ');
   };
 

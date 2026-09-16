@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useAppStore, Transaction } from '../store/useAppStore';
 import { format, parseISO } from 'date-fns';
-import { History as HistoryIcon, Image as ImageIcon } from 'lucide-react';
+import { th } from 'date-fns/locale';
+import { History as HistoryIcon, Image as ImageIcon, RotateCcw } from 'lucide-react';
 import ImageViewer from './ImageViewer';
 
 export default function History() {
-  const { transactions } = useAppStore();
+  const { transactions, undoCycle } = useAppStore();
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   
   // Group transactions by clearDate
@@ -97,7 +98,7 @@ export default function History() {
                 activeDate === g.clearDate ? 'bg-primary text-white shadow-md' : 'bg-gray-200 text-gray-700'
               }`}
             >
-              รอบ {format(parseISO(g.clearDate), 'dd MMM yyyy')}
+              รอบ {format(parseISO(g.clearDate), 'dd MMM yyyy', { locale: th })}
             </button>
           ))}
         </div>
@@ -110,9 +111,19 @@ export default function History() {
           </div>
         </div>
 
-        <div className="text-center mb-4 relative z-10">
+        <div className="text-center mb-4 relative z-10 flex flex-col items-center">
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">ประวัติรอบบิลวันที่</h2>
-          <p className="text-xl font-black text-gray-700">{format(parseISO(currentGroup.clearDate), 'dd MMM yyyy')}</p>
+          <p className="text-xl font-black text-gray-700 mb-2">{format(parseISO(currentGroup.clearDate), 'dd MMM yyyy', { locale: th })}</p>
+          <button 
+            onClick={() => {
+              if (window.confirm('คุณต้องการยกเลิกการเคลียร์บิลรอบนี้ แล้วดึงรายการกลับไปหน้าแรกหรือไม่?')) {
+                undoCycle(currentGroup.clearDate);
+              }
+            }}
+            className="flex items-center gap-1 text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full hover:bg-red-200 transition-colors"
+          >
+            <RotateCcw className="w-3 h-3" /> ยกเลิกการเคลียร์บิล (ดึงกลับ)
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-2 mb-4 items-start relative z-10 opacity-80">
